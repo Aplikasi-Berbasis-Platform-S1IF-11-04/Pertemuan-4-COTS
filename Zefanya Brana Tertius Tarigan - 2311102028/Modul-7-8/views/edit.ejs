@@ -1,0 +1,42 @@
+<%- include('partials/header') %>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-warning">
+    <h4 class="mb-0">Edit Data Mahasiswa</h4>
+  </div>
+
+  <div class="card-body">
+    <form id="studentForm" action="/students/<%= student.id %>?_method=PUT" method="POST">
+      <div class="mb-3">
+        <label class="form-label">NIM</label>
+        <input type="text" name="nim" class="form-control" value="<%= student.nim %>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Nama</label>
+        <input type="text" name="nama" class="form-control" value="<%= student.nama %>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Jurusan</label>
+        <select name="jurusan" class="form-select">
+          <option value="">-- Pilih Jurusan --</option>
+          <option value="Informatika" <%= student.jurusan === 'Informatika' ? 'selected' : '' %>>Informatika</option>
+          <option value="Sistem Informasi" <%= student.jurusan === 'Sistem Informasi' ? 'selected' : '' %>>Sistem Informasi</option>
+          <option value="Teknik Komputer" <%= student.jurusan === 'Teknik Komputer' ? 'selected' : '' %>>Teknik Komputer</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="<%= student.email %>">
+      </div>
+
+      <button type="submit" class="btn btn-warning">Update</button>
+      <a href="/students" class="btn btn-secondary">Kembali</a>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+<script src="/js/form.js"></script>
