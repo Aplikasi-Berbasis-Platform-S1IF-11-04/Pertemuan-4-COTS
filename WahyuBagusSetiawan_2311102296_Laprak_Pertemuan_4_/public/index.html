@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TaskFlow Project Manager</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- DataTables -->
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+  <style>
+
+    /* BACKGROUND */
+    body{
+      min-height:100vh;
+      background: linear-gradient(-45deg,#0f172a,#1e293b,#111827,#1e1b4b);
+      background-size:400% 400%;
+      animation: gradientBG 15s ease infinite;
+      overflow-x:hidden;
+      position:relative;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    @keyframes gradientBG {
+
+      0%{
+        background-position:0% 50%;
+      }
+
+      50%{
+        background-position:100% 50%;
+      }
+
+      100%{
+        background-position:0% 50%;
+      }
+
+    }
+
+    /* FLOATING BALL */
+    .bg-animation span{
+
+      position:absolute;
+      bottom:-150px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.08);
+      animation: float 25s linear infinite;
+
+    }
+
+    @keyframes float {
+
+      0%{
+        transform:translateY(0) rotate(0deg);
+        opacity:0;
+      }
+
+      10%{
+        opacity:1;
+      }
+
+      90%{
+        opacity:0.7;
+      }
+
+      100%{
+        transform:translateY(-1000px) rotate(720deg);
+        opacity:0;
+      }
+
+    }
+
+    .bg-animation span:nth-child(1){
+      left:10%;
+      width:80px;
+      height:80px;
+      animation-duration:18s;
+    }
+
+    .bg-animation span:nth-child(2){
+      left:25%;
+      width:120px;
+      height:120px;
+      animation-duration:25s;
+    }
+
+    .bg-animation span:nth-child(3){
+      left:40%;
+      width:60px;
+      height:60px;
+      animation-duration:15s;
+    }
+
+    .bg-animation span:nth-child(4){
+      left:55%;
+      width:150px;
+      height:150px;
+      animation-duration:22s;
+    }
+
+    .bg-animation span:nth-child(5){
+      left:70%;
+      width:90px;
+      height:90px;
+      animation-duration:17s;
+    }
+
+    .bg-animation span:nth-child(6){
+      left:85%;
+      width:110px;
+      height:110px;
+      animation-duration:30s;
+    }
+
+    /* TOPBAR */
+    .topbar{
+
+      background: rgba(255,255,255,0.08);
+
+      backdrop-filter: blur(15px);
+
+      border:1px solid rgba(255,255,255,0.1);
+
+      color:white;
+
+      padding:30px;
+
+      border-radius:20px;
+
+      margin-bottom:25px;
+
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+
+    }
+
+    /* CARD */
+    .stats-card{
+
+      border-radius:20px;
+
+      padding:20px;
+
+      color:white;
+
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+
+    }
+
+    /* TABLE CONTAINER */
+    .table-container{
+
+      background: rgba(255,255,255,0.08);
+
+      backdrop-filter: blur(15px);
+
+      border:1px solid rgba(255,255,255,0.1);
+
+      border-radius:20px;
+
+      padding:20px;
+
+      color:white;
+
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+
+    }
+
+    table{
+      color:white !important;
+    }
+
+    thead{
+      color:black;
+    }
+
+    .dataTables_wrapper{
+      color:white;
+    }
+
+    .dataTables_info,
+    label{
+      color:white !important;
+    }
+
+    input[type="search"],
+    select{
+
+      background:rgba(255,255,255,0.1) !important;
+
+      color:white !important;
+
+      border:none !important;
+
+    }
+
+    .form-control{
+      background:rgba(255,255,255,0.1);
+      border:none;
+      color:white;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<!-- ANIMATION -->
+<div class="bg-animation">
+
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
+
+</div>
+
+<div class="container py-5" style="position:relative; z-index:2;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+
+    <div class="d-flex justify-content-between align-items-center">
+
+      <div>
+
+        <h1 class="fw-bold">TaskFlow</h1>
+
+        <p class="mb-0">
+          Sistem Manajemen Task dan Progress Project
+        </p>
+
+      </div>
+
+      <div>
+
+        <span class="badge bg-warning text-dark p-3">
+          Wahyu Bagus Setiawan
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- STATISTIK -->
+  <div class="row mb-4">
+
+    <div class="col-md-4 mb-3">
+
+      <div class="stats-card bg-primary">
+
+        <h5>Total Task</h5>
+
+        <h2 id="totalTask">0</h2>
+
+      </div>
+
+    </div>
+
+    <div class="col-md-4 mb-3">
+
+      <div class="stats-card bg-success">
+
+        <h5>Task Selesai</h5>
+
+        <h2 id="taskDone">0</h2>
+
+      </div>
+
+    </div>
+
+    <div class="col-md-4 mb-3">
+
+      <div class="stats-card bg-warning text-dark">
+
+        <h5>Task Progress</h5>
+
+        <h2 id="taskProgress">0</h2>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+      <h4 class="fw-bold">
+        Data Task Project
+      </h4>
+
+      <a href="tambah.html" class="btn btn-light fw-bold">
+        + Tambah Task
+      </a>
+
+    </div>
+
+    <table id="taskTable" class="table table-hover table-bordered">
+
+      <thead class="table-light">
+
+        <tr>
+          <th>ID</th>
+          <th>Judul</th>
+          <th>Prioritas</th>
+          <th>Deadline</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+
+      </thead>
+
+      <tbody></tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<!-- JQUERY -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DATATABLE -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+
+$(document).ready(function(){
+
+  let table = $("#taskTable").DataTable({
+
+    ajax: {
+
+      url: "/api/tasks",
+
+      dataSrc: function(json){
+
+        $("#totalTask").text(json.data.length);
+
+        const done = json.data.filter(
+          t => t.status === "Selesai"
+        ).length;
+
+        const progress = json.data.filter(
+          t => t.status === "Progress"
+        ).length;
+
+        $("#taskDone").text(done);
+
+        $("#taskProgress").text(progress);
+
+        return json.data;
+      }
+
+    },
+
+    columns: [
+
+      { data: "id" },
+
+      { data: "judul" },
+
+      {
+
+        data: "prioritas",
+
+        render: function(data){
+
+          if(data === "Tinggi"){
+            return `<span class="badge bg-danger">${data}</span>`;
+          }
+
+          if(data === "Sedang"){
+            return `<span class="badge bg-warning text-dark">${data}</span>`;
+          }
+
+          return `<span class="badge bg-secondary">${data}</span>`;
+        }
+
+      },
+
+      { data: "deadline" },
+
+      {
+
+        data: "status",
+
+        render: function(data){
+
+          if(data === "Selesai"){
+            return `<span class="badge bg-success">${data}</span>`;
+          }
+
+          if(data === "Progress"){
+            return `<span class="badge bg-primary">${data}</span>`;
+          }
+
+          return `<span class="badge bg-dark">${data}</span>`;
+        }
+
+      },
+
+      {
+
+        data: null,
+
+        render: function(data, type, row){
+
+          return `
+
+            <button class="btn btn-warning btn-sm btn-edit"
+              data-id="${row.id}">
+              Edit
+            </button>
+
+            <button class="btn btn-danger btn-sm btn-delete"
+              data-id="${row.id}">
+              Hapus
+            </button>
+
+          `;
+        }
+
+      }
+
+    ]
+
+  });
+
+  // DELETE
+  $("#taskTable tbody").on("click", ".btn-delete", function(){
+
+    const id = $(this).data("id");
+
+    if(confirm("Hapus task ini?")){
+
+      $.ajax({
+
+        url: `/api/tasks/${id}`,
+
+        type: "DELETE",
+
+        success: function(){
+
+          table.ajax.reload();
+
+        }
+
+      });
+
+    }
+
+  });
+
+  // EDIT
+  $("#taskTable tbody").on("click", ".btn-edit", function(){
+
+    const id = $(this).data("id");
+
+    window.location.href = `edit.html?id=${id}`;
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
