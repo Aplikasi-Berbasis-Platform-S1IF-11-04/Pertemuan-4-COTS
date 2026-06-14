@@ -1,0 +1,146 @@
+<%- include('layout', { body: `
+    <div class="row justify-content-center py-4">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card border-0">
+                <div class="card-header border-bottom-0 pb-0 pt-4 px-4 bg-transparent">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="bi bi-person-plus text-primary me-2"></i>
+                        <span id="formTitle">Input Mahasiswa Baru</span>
+                    </h4>
+                    <p class="text-muted mt-2 mb-0 small">Silakan lengkapi formulir di bawah ini.</p>
+                </div>
+                <div class="card-body p-4">
+                    <div id="alertMessage" class="alert d-none align-items-center mb-4" role="alert">
+                        <i class="bi me-2 alert-icon"></i>
+                        <div class="alert-text"></div>
+                    </div>
+                    <form id="mahasiswaForm">
+                        <input type="hidden" id="mahasiswaId">
+
+                        <div class="mb-4">
+                            <label for="nim" class="form-label">Nomor Induk Mahasiswa (NIM)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted">
+                                    <i class="bi bi-credit-card-2-front"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="nim" placeholder="Contoh: 2311102066" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="nama" class="form-label">Nama Lengkap</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="nama" placeholder="Masukkan nama lengkap" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="program_studi" class="form-label">Program Studi</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0 text-muted">
+                                    <i class="bi bi-book"></i>
+                                </span>
+                                <select class="form-select border-start-0 ps-0" id="program_studi" required>
+                                    <option value="" disabled selected>Pilih Program Studi...</option>
+                                    <option value="S1 Software Engineering">S1 Software Engineering</option>
+                                    <option value="S1 Informatika">S1 Informatika</option>
+                                    <option value="S1 Sistem Informasi">S1 Sistem Informasi</option>
+                                    <option value="S1 Sains Data">S1 Sains Data</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between pt-3 border-top" style="border-color: var(--border-color) !important;">
+                            <a href="/data" class="btn btn-secondary px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Kembali
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" id="btnSubmit">
+                                <i class="bi bi-save me-2"></i>Simpan Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+`, script: `
+    <script>
+        $(document).ready(function() {
+            // Check if editing (id in query string)
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('id');
+
+            if (editId) {
+                $('#btnSubmit').html('<i class="bi bi-check-circle me-2"></i>Update Data');
+                $('#formTitle').text('Edit Data Mahasiswa');
+                $('.card-header i').removeClass('bi-person-plus').addClass('bi-person-gear');
+
+                // Fetch data for editing
+                $.ajax({
+                    url: '/api/mahasiswa/' + editId,
+                    method: 'GET',
+                    success: function(response) {
+                        $('#mahasiswaId').val(response.id);
+                        $('#nama').val(response.nama);
+                        $('#nim').val(response.nim);
+                        $('#program_studi').val(response.program_studi);
+                    },
+                    error: function() {
+                        showAlert('Gagal mengambil data', 'danger', 'bi-exclamation-triangle');
+                    }
+                });
+            }
+
+            // Handle form submission
+            $('#mahasiswaForm').on('submit', function(e) {
+                e.preventDefault();
+
+                // Simple loading state
+                const $btn = $('#btnSubmit');
+                const originalHtml = $btn.html();
+                $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menyimpan...').prop('disabled', true);
+
+                const id = $('#mahasiswaId').val();
+                const data = {
+                    nama: $('#nama').val(),
+                    nim: $('#nim').val(),
+                    program_studi: $('#program_studi').val()
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? '/api/mahasiswa/' + id : '/api/mahasiswa';
+
+                $.ajax({
+                    url: url,
+                    method: method,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        showAlert(response.message, 'success', 'bi-check-circle');
+                        if (!id) {
+                            $('#mahasiswaForm')[0].reset();
+                        }
+                        // Redirect after short delay
+                        setTimeout(() => window.location.href = '/data', 1500);
+                    },
+                    error: function(err) {
+                        showAlert('Terjadi kesalahan saat menyimpan', 'danger', 'bi-exclamation-triangle');
+                        $btn.html(originalHtml).prop('disabled', false);
+                    }
+                });
+            });
+
+            function showAlert(message, type, icon) {
+                $('#alertMessage')
+                    .removeClass('d-none alert-success alert-danger')
+                    .addClass('alert-' + type + ' d-flex')
+                    .find('.alert-text').text(message).end()
+                    .find('.alert-icon').removeClass().addClass('bi me-2 alert-icon ' + icon).end()
+                    .show();
+            }
+        });
+    </script>
+` }) %>
