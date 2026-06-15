@@ -1,0 +1,22 @@
+{
+  "name": "2311102066_haikalsatriatama",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "bootstrap-icons": "^1.13.1",
+    "cors": "^2.8.6",
+    "datatables.net-bs5": "^2.3.8",
+    "datatables.net-dt": "^2.3.8",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1"
+  }
+}

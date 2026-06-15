@@ -1,0 +1,156 @@
+<%- include('layout', { body: `
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+    <div class="row py-4">
+        <div class="col-12">
+            <div class="card border-0">
+                <div class="card-header border-bottom-0 pb-0 pt-4 px-4 bg-transparent d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0 d-flex align-items-center">
+                            <i class="bi bi-people text-primary me-2"></i>Daftar Mahasiswa
+                        </h4>
+                        <p class="text-muted mt-2 mb-0 small">Kelola data mahasiswa yang terdaftar.</p>
+                    </div>
+                    <a href="/form" class="btn btn-primary d-flex align-items-center">
+                        <i class="bi bi-plus-lg me-2"></i>Tambah Data
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table id="tabelMahasiswa" class="table table-hover align-middle w-100">
+                            <thead>
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="20%">NIM</th>
+                                    <th width="35%">Nama Lengkap</th>
+                                    <th width="25%">Program Studi</th>
+                                    <th width="15%" class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title text-danger d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-0">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+                    <input type="hidden" id="deleteId">
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4 pt-0">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger px-4 d-flex align-items-center" id="btnConfirmDelete">
+                        <i class="bi bi-trash me-2"></i>Hapus Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+`, script: `
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable with AJAX source
+            const table = $('#tabelMahasiswa').DataTable({
+                ajax: {
+                    url: '/api/mahasiswa',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { data: 'id', className: 'text-center fw-medium text-muted' },
+                    { data: 'nim', className: 'font-monospace' },
+                    {
+                        data: 'nama',
+                        render: function(data) {
+                            return '<div class="fw-medium">' + data + '</div>';
+                        }
+                    },
+                    {
+                        data: 'program_studi',
+                        render: function(data) {
+                            return '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return \`
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="/form?id=\${row.id}" class="btn btn-sm btn-outline-primary" title="Edit Data">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="\${row.id}" title="Hapus Data">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            \`;
+                        }
+                    }
+                ],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
+                    search: "_INPUT_",
+                    searchPlaceholder: "Cari data..."
+                },
+                dom: '<"row mb-3"<"col-md-6"l><"col-md-6"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]]
+            });
+
+            // Styling adjustments for DataTables wrapper
+            $('.dataTables_length select').addClass('form-select form-select-sm d-inline-block w-auto');
+            $('.dataTables_filter input').addClass('form-control form-control-sm');
+
+            // Handle delete button click
+            $('#tabelMahasiswa tbody').on('click', '.btn-delete', function() {
+                const id = $(this).data('id');
+                $('#deleteId').val(id);
+                $('#deleteModal').modal('show');
+            });
+
+            // Handle confirm delete
+            $('#btnConfirmDelete').on('click', function() {
+                const id = $('#deleteId').val();
+                const $btn = $(this);
+                const originalHtml = $btn.html();
+
+                $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Menghapus...').prop('disabled', true);
+
+                $.ajax({
+                    url: '/api/mahasiswa/' + id,
+                    method: 'DELETE',
+                    success: function(response) {
+                        $('#deleteModal').modal('hide');
+                        table.ajax.reload(null, false); // false = stay on current page
+                        $btn.html(originalHtml).prop('disabled', false);
+                    },
+                    error: function() {
+                        alert('Gagal menghapus data');
+                        $('#deleteModal').modal('hide');
+                        $btn.html(originalHtml).prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+` }) %>

@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "nim": "2311102028",
+    "nama": "Zefanya Tarigan",
+    "jurusan": "Informatika",
+    "email": "zefanyabrana@email.com"
+  },
+  {
+    "id": 2,
+    "nim": "23111020296",
+    "nama": "Randy Batubara",
+    "jurusan": "Informatika",
+    "email": "randy@gmail.com"
+  },
+  {
+    "id": 3,
+    "nim": "23111028236",
+    "nama": "Ziko Sembiring",
+    "jurusan": "Sistem Informasi",
+    "email": "ziko123@gmail.com"
+  }
+]

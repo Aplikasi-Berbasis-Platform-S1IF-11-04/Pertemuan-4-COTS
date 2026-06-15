@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arvan Hiking - Manajemen Peralatan</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      .top-bar {
+        height: 110px;
+        padding: 1.5rem;
+        background-color: #207cc7;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+      .greeting p {
+        font-size: 0.9rem;
+        margin: 0;
+        font-weight: 400;
+        color: #fff;
+      }
+      .greeting h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+        color: #fff;
+      }
+      .notifications {
+        display: flex;
+        margin-left: auto;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="top-bar">
+      <div class="greeting">
+        <p>Sistem Inventaris Outdoor</p>
+        <h3>Arvan Hiking</h3>
+      </div>
+      <div class="notifications">
+        <span
+          class="badge bg-white text-danger border border-light rounded-pill px-3 py-2 shadow-sm"
+        >
+          Arvan Murbiyanto | 2311102074
+        </span>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm bg-white rounded-3">
+            <div class="card-body p-4">
+              <h2 class="fw-bold text-dark mb-2">
+                Manajemen Stok Peralatan Hiking
+              </h2>
+              <p class="text-secondary mb-0">
+                Kelola stok, harga, dan kategori peralatan pendakian secara
+                real-time dan aman.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0 rounded-3 mb-5">
+        <div
+          class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3"
+        >
+          <h5 class="mb-0 fw-semibold">Data Peralatan Hiking</h5>
+          <a href="tambah.html" class="btn btn-danger btn-sm fw-bold shadow-sm">
+            + Tambah Alat
+          </a>
+        </div>
+        <div class="card-body p-4">
+          <table
+            id="tabelProduk"
+            class="table table-hover table-bordered w-100"
+          >
+            <thead class="table-light">
+              <tr>
+                <th width="5%">ID</th>
+                <th width="25%">Nama Peralatan</th>
+                <th width="15%">Kategori</th>
+                <th width="20%">Harga (Rp)</th>
+                <th width="15%">Stok Fisik</th>
+                <th width="20%">Aksi Sistem</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        let table = $("#tabelProduk").DataTable({
+          ajax: "/api/products",
+          columns: [
+            { data: "id" },
+            { data: "nama" },
+            { data: "kategori" },
+            {
+              data: "harga",
+              render: function (data) {
+                return new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                }).format(data);
+              },
+            },
+            {
+              data: "stok",
+              render: function (data) {
+                if (data < 5) {
+                  return `<span class="badge bg-danger">${data} (Kritis)</span>`;
+                }
+                return `<span class="badge bg-primary">${data}</span>`;
+              },
+            },
+            {
+              data: null,
+              render: function (data, type, row) {
+                return `
+                            <button class="btn btn-warning btn-sm btn-edit fw-bold text-dark shadow-sm" 
+                                    data-id="${row.id}">Edit</button>
+                            <button class="btn btn-danger btn-sm btn-hapus fw-bold shadow-sm" 
+                                    data-id="${row.id}">Hapus</button>
+                        `;
+              },
+            },
+          ],
+          language: {
+            search: "Cari Alat:",
+            lengthMenu: "Tampilkan _MENU_ entri",
+            info: "Menampilkan _START_ hingga _END_ dari _TOTAL_ alat",
+            emptyTable: "Belum ada data peralatan di dalam sistem.",
+          },
+        });
+
+        $("#tabelProduk tbody").on("click", ".btn-hapus", function () {
+          let id = $(this).data("id");
+          if (
+            confirm(
+              "Tindakan ini tidak dapat dibatalkan. Hapus peralatan ini dari data?",
+            )
+          ) {
+            $.ajax({
+              url: `/api/products/${id}`,
+              type: "DELETE",
+              success: function (res) {
+                table.ajax.reload(null, false);
+              },
+              error: function () {
+                alert("Gagal menghapus data. Terjadi kesalahan pada server.");
+              },
+            });
+          }
+        });
+
+        $("#tabelProduk tbody").on("click", ".btn-edit", function () {
+          let id = $(this).data("id");
+          window.location.href = `edit.html?id=${id}`;
+        });
+      });
+    </script>
+  </body>
+</html>
